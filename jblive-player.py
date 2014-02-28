@@ -64,19 +64,10 @@ class Player(gobject.GObject):
     
     def __init__(self, filename=None):
         gobject.GObject.__init__(self)
-        self.showingControls = False
+        self.showing_controls = False
         self.filename = filename
-        self.playingState = STOPPED
-        self.play_thread_id = None
+        self.playing_state = STOPPED
         self.fullscreen = False
-        self.seek_locked = False
-        self.pos_data = {}
-        self.dur_int = 0
-        self.pos_int = 0
-        self.volume = 1.0
-        self.time_format = gst.Format(gst.FORMAT_TIME)
-        self.window = None
-        self.main_event_box = None
         self.init_window()
         self.init_invisible_cursor()
         self.init_main_event_box()
@@ -262,11 +253,11 @@ static char * invisible_xpm[] = {
             self.hide_timeout = None
         self.hide_timeout = gobject.timeout_add(3000, self.hide_controls)
         self.movie_window.window.set_cursor(None)
-        self.showingControls = True
+        self.showing_controls = True
         
         
     def hide_controls(self):
-        self.showingControls = False
+        self.showing_controls = False
         self.controls.hide()
         self.stream_label.hide()
         self.hide_timeout = None
@@ -310,16 +301,9 @@ static char * invisible_xpm[] = {
         print "playing uri:", uri
         self.player.set_state(STOPPED)
         self.player.set_property("uri", uri)
-        # self.player.set_property("volume",self.volume)
         self.player.set_state(PLAYING)
         self.emit('state-changed', PLAYING)
-        self.playingState = self.player.get_state()[1]
-        try:
-            self.dur_int = self.player.query_duration(self.time_format, None)[0]
-        except gst.QueryError, e:
-            print "gst.QueryError:", e
-            self.dur_int = 0
-
+        self.playing_state = self.player.get_state()[1]
         self.should_hide_window()
 
     def should_hide_window(self):
@@ -334,16 +318,16 @@ static char * invisible_xpm[] = {
         self.player.set_state(STOPPED)
     
     def pause(self, *args):
-        self.playingState = self.player.get_state()[1]
-        if self.playingState == STOPPED:
+        self.playing_state = self.player.get_state()[1]
+        if self.playing_state == STOPPED:
             self.start()
-        elif self.playingState == PLAYING:
+        elif self.playing_state == PLAYING:
             self.player.set_state(STOPPED)
-        elif self.playingState == PAUSED:
+        elif self.playing_state == PAUSED:
             self.player.set_state(PLAYING)
             
-        self.playingState = self.player.get_state()[1]
-        self.emit('state-changed', self.playingState)
+        self.playing_state = self.player.get_state()[1]
+        self.emit('state-changed', self.playing_state)
 
     def debug_message(self, gst_message):
         attribs_to_check = [
@@ -365,8 +349,6 @@ static char * invisible_xpm[] = {
     
     def on_message(self, bus, message):
         t = message.type
-        # print "on_message:",t
-        # self.debug_message(message)
         if t == gst.MESSAGE_STATE_CHANGED:
             # print "on_message parse_state_changed()", message.parse_state_changed()
             return
@@ -377,13 +359,11 @@ static char * invisible_xpm[] = {
 
         if t == gst.MESSAGE_EOS:
             print "END OF STREAM"
-            # self.play_thread_id = None
             self.player.set_state(STOPPED)
             self.emit('end-of-stream')
             return 
 
         if t == gst.MESSAGE_ERROR:
-            # self.play_thread_id = None
             self.player.set_state(STOPPED)
             err, debug = message.parse_error()
             print "Error: '%s'" % err, "debug: '%s'" % debug
@@ -435,23 +415,15 @@ static char * invisible_xpm[] = {
         
         if message_name == "prepare-xwindow-id":
             print "*"*80
-            # self.window.show_now()
-            # self.window.set_decorated(True)
-            # self.clear_hide_timeout()
-            # gtk.gdk.threads_enter()
             self.window.show_all()
             self.imagesink = message.src
             self.imagesink.set_property("force-aspect-ratio", True)
             self.imagesink.set_xwindow_id(self.movie_window.window.xid)
             if self.fullscreen:
                 gobject.idle_add(self.window.fullscreen)
-            # self.window.show()
-            # gtk.gdk.threads_leave()
             gobject.idle_add(self.emit,'show-window')
         elif message_name == 'missing-plugin':
             print "MISSING PLUGGIN"
-            # self.play_thread_id = None
-            # self.player.set_state(STOPPED)
             self.emit('missing-plugin')
         if message_name == 'playbin2-stream-changed':
             print "-"*80
