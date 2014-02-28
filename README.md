@@ -9,11 +9,12 @@ The Jupiter Broadcasting logo belongs to Jupiter Broadcasting. (I don't own the
 rights, and it's NOT being released under the GPL 3.)  This is not an official
 Jupiter Broadcasting app.  Just something I wrote when I was board one day.
 
+# Installation
 ```pip2 install -r requirements.txt```
 
 You'll also need to have all the right gstreamer plugins installed.
 
-Window Hotkeys:
+# Window Hotkeys:
 `F` - Full Screen
 `D` - Toggle window decoration
 `P`, `A`, `space`, `enter`, `Click the video window` - Stop streaming
