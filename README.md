@@ -14,7 +14,9 @@ Jupiter Broadcasting app.  Just something I wrote when I was board one day.
 
 You'll also need to have all the right gstreamer plugins installed.
 
-# Window Hotkeys:
+# Window Hotkeys
 `F` - Full Screen
+
 `D` - Toggle window decoration
+
 `P`, `A`, `space`, `enter`, `Click the video window` - Stop streaming
