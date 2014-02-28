@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-# lib/player.py -- main gstreamer player
+# jblive-player -- Plays gs
 #    Copyright (C) 2014 Eugene Miller <theerm@gmail.com>
 #
 #    This program is free software; you can redistribute it and/or modify
