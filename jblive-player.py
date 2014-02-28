@@ -698,13 +698,21 @@ static char * invisible_xpm[] = {
 
 if __name__ == '__main__':
     gobject.threads_init()
-    
+
+    def on_playing_state_changed(p, state):
+        # (<Player object at 0x975f6bc (__main__+Player at 0x97be220)>, <enum GST_STATE_PAUSED of type GstState>)
+        if state == gst.STATE_PLAYING:
+            ind.set_from_stock(gtk.STOCK_MEDIA_PLAY)
+        elif state == gst.STATE_PAUSED:
+            ind.set_from_stock(gtk.STOCK_MEDIA_PAUSE)
+
     def error_msg(player, msg,debug):
         print "ERROR MESSAGE:", msg, ',', debug
         if not os.path.isfile(player.filename):
             player.emit('end-of-stream')
 
     def on_menuitem_clicked(item):
+        gtk.threads_leave()
         # CLICKED:(<gtk.ImageMenuItem object at 0x8f6bb44 (GtkImageMenuItem at 0x8bc40f8)>,) {}
         label = item.get_label()
         if label == 'Quit':
@@ -726,11 +734,13 @@ if __name__ == '__main__':
     #                                   gtk.STOCK_CDROM,
     #                                   appindicator.CATEGORY_APPLICATION_STATUS)
     ind = gtk.StatusIcon()
-    ind.set_name("player.py")
-    ind.set_title("player.py")
+    ind.set_name("jblive-player.py")
+    ind.set_title("jblive-player.py")
     ind.connect("button-press-event", on_button_press)
     ind.set_from_stock(gtk.STOCK_MEDIA_PLAY)
 
+    pause_img = gtk.image_new_from_stock(gtk.STOCK_MEDIA_PAUSE, gtk.ICON_SIZE_BUTTON)
+    play_img = gtk.image_new_from_stock(gtk.STOCK_MEDIA_PLAY, gtk.ICON_SIZE_BUTTON)
     
     menu = gtk.Menu()
     for k, v in streams.iteritems():
@@ -770,12 +780,10 @@ if __name__ == '__main__':
     player = Player()
     #  player.connect('end-of-stream', next)
     player.connect('error', error_msg)
-    ind.connect('scroll-event', player.on_scroll)
+    player.connect('state-changed', on_playing_state_changed)
 
-    # player.next_button.connect('clicked',next)
-    # player.prev_button.connect('clicked',prev)
-    # gobject.idle_add(next)
-    while gtk.events_pending(): gtk.main_iteration(False)
+    while gtk.events_pending(): 
+        gtk.main_iteration(False)
     gtk.main()
 
 
